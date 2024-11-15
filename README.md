@@ -41,6 +41,63 @@ cd automated-cv
 python automated_cv.py
 ```
 
+## Don't have Python installed on your computer?
+
+Follow these simplified steps to get Python up and running:
+
+**Windows:**
+
+1. **Download:** Go to [python.org/downloads](python.org/downloads) and download the latest Windows installer.
+2. **Install:** Run the installer.  **Important:** Check the box that says "Add Python to PATH" during installation. This makes it easier to use Python from your command prompt.
+3. **Verify:** Open your command prompt (search for "cmd") and type `python --version`. You should see the Python version printed.
+
+**macOS:**
+
+1. **Download:** Go to [python.org/downloads](python.org/downloads) and download the latest macOS installer.
+2. **Install:** Run the installer.
+3. **Verify:** Open your terminal (Applications > Utilities > Terminal) and type `python3 --version`. You should see the Python version printed.
+
+**Linux:**
+
+Python is often pre-installed on Linux.  Check by opening a terminal and typing `python3 --version`. If it's not installed:
+
+1. **Use your distribution's package manager:**  For example, on Ubuntu/Debian, use `sudo apt-get update` and then `sudo apt-get install python3`.  Other distributions have similar commands (e.g., `yum` on Fedora/CentOS).
+2. **Verify:** Type `python3 --version` in your terminal.
+
+
+## Don't have Git installed?
+
+Git is essential for working with this GitHub repository. Here's how to install it:
+
+**Windows:**
+
+1. **Download:** Go to [git-scm.com/download/win](git-scm.com/download/win) and download the Git for Windows installer.
+2. **Install:** Run the installer.  Use the default settings unless you have specific preferences.
+3. **Verify:** Open your command prompt and type `git --version`. You should see the Git version printed.
+
+**macOS:**
+
+1. **Install Xcode Command Line Tools:** Open your terminal and type `xcode-select --install`.  This is the easiest way to get Git on macOS.
+2. **Verify:** Type `git --version` in your terminal.
+
+**Linux:**
+
+Git is often pre-installed. Check by typing `git --version` in your terminal. If it's not installed:
+
+1. **Use your distribution's package manager:** For example, on Ubuntu/Debian, use `sudo apt-get update` and then `sudo apt-get install git`. Other distributions have similar commands (e.g., `yum` on Fedora/CentOS).
+2. **Verify:** Type `git --version` in your terminal.
+
+
+## Working with this GitHub Repository
+
+Once you have Python and Git installed, you can clone this repository to your local machine:
+
+1. **Open your terminal or command prompt.**
+2. **Navigate to the directory where you want to store the repository.**
+3. **Clone the repository:** Type `git clone <repository_url>` (replace `<repository_url>` with the actual URL of this repository).
+
+Now you have a local copy of the repository and can start working with the code!  Refer to the repository's README for further instructions.
+
 ## Example Output
 
 ### Generated Markdown (cv.md)
