@@ -67,7 +67,7 @@ def process_paragraph_element(doc, element):
             else:
                 p.add_run(str(content))
 
-def convert_to_docx(md_file):
+def convert_to_docx(md_file, save_path):
     # Read markdown content
     with open(md_file, 'r', encoding='utf-8') as f:
         md_content = f.read()
@@ -86,7 +86,7 @@ def convert_to_docx(md_file):
         process_paragraph_element(doc, element)
     
     # Save docx file
-    output_file = md_file.replace('.md', '.docx')
+    output_file = os.path.join(save_path, md_file.replace('.md', '.docx'))
     doc.save(output_file)
     return output_file
 
@@ -96,7 +96,10 @@ def main():
         return
     
     try:
-        output_file = convert_to_docx(md_file)
+        save_path = input("Enter the path to save the files (default: cv-output): ").strip() or "cv-output"
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        output_file = convert_to_docx(md_file, save_path)
         print(f"\nSuccessfully converted to DOCX: {output_file}")
     except Exception as e:
         print(f"Error during conversion: {str(e)}")

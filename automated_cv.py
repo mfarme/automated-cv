@@ -69,9 +69,10 @@ def fetch_orcid_data():
     if is_valid_orcid(orcid_id):
         try:
             profile = get_orcid_profile(orcid_id)
-            save_profile_to_file(profile, "orcid_profile.json")
-            print("Profile saved to orcid_profile.json")
-            return "orcid_profile.json"
+            save_path = get_save_path()
+            save_profile_to_file(profile, os.path.join(save_path, "orcid_profile.json"))
+            print(f"Profile saved to {os.path.join(save_path, 'orcid_profile.json')}")
+            return os.path.join(save_path, "orcid_profile.json")
         except Exception as e:
             print(f"Error fetching ORCID profile: {str(e)}")
             return None
@@ -92,7 +93,8 @@ def generate_cv(json_file=None):
         with open(json_file, 'r', encoding='utf-8') as f:
             json_data = f.read()
         markdown_cv = json_to_cv(json_data)
-        output_filename = "cv.md"
+        save_path = get_save_path()
+        output_filename = os.path.join(save_path, "cv.md")
         with open(output_filename, 'w', encoding='utf-8') as outfile:
             outfile.write(markdown_cv)
         print(f"Markdown CV saved to '{output_filename}'")
@@ -113,7 +115,8 @@ def convert_cv(md_file=None):
     try:
         # Ensure BeautifulSoup is available
         import bs4
-        output_file = convert_to_docx(md_file)
+        save_path = get_save_path()
+        output_file = convert_to_docx(md_file, save_path)
         print(f"\nSuccessfully converted to DOCX with enhanced formatting: {output_file}")
     except ImportError:
         print("Error: BeautifulSoup4 is required for enhanced formatting")
@@ -139,6 +142,13 @@ def generate_complete_cv():
     
     # Step 3: Convert to DOCX/PDF
     convert_cv(md_file)
+
+def get_save_path():
+    default_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "cv-output")
+    save_path = input(f"Enter the path to save the files (default: {default_path}): ").strip() or default_path
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
+    return save_path
 
 def main():
     if not check_and_install_requirements():
