@@ -63,20 +63,68 @@ def json_to_cv(json_data):
                 pub_date = f"{summary['publication-date']['year']['value']}"
                 if summary['publication-date'].get('month'):
                     pub_date += f"-{summary['publication-date']['month']['value']}"
-                cv += f"- {title}, *{journal}*, {pub_date}. doi:[{doi}](https://doi.org/{doi})\n\n"
+                cv += f"* {title}, *{journal}*, {pub_date}. doi:[{doi}](https://doi.org/{doi})\n"
+        cv += "\n"  # Add extra newline after publications
 
+    # Professional Activities
+    invited_positions = data['activities-summary'].get('invited-positions', {}).get('affiliation-group', [])
+    memberships = data['activities-summary'].get('memberships', {}).get('affiliation-group', [])
+    services = data['activities-summary'].get('services', {}).get('affiliation-group', [])
+    distinctions = data['activities-summary'].get('distinctions', {}).get('affiliation-group', [])
 
-    # Keywords/Skills
-    keywords = data['person']['keywords'].get('keyword', [])
-    if keywords:
-        cv += "## Skills\n\n"
-        cv += ", ".join([keyword['content'] for keyword in keywords]) + "\n\n"
+    if invited_positions or memberships or services or distinctions:
+        cv += "## Professional Activities\n\n"
+        
+        # Process distinctions
+        if distinctions:
+            cv += "### Honors and Awards\n\n"
+            for distinction in distinctions:
+                for summary in distinction['summaries']:
+                    dist = summary['distinction-summary']
+                    start_date = f"{dist['start-date']['year']['value']}"
+                    end_date = dist['end-date']['year']['value'] if dist.get('end-date') else ""
+                    date_range = f"{start_date}{'-' + end_date if end_date else ''}"
+                    cv += f"* {dist['role-title']}, {dist['organization']['name']}, {date_range}\n"
+            cv += "\n"
+        
+        # Process invited positions
+        if invited_positions:
+            cv += "### Advisory Positions\n\n"
+            for position in invited_positions:
+                for summary in position['summaries']:
+                    pos = summary['invited-position-summary']
+                    start_date = f"{pos['start-date']['year']['value']}"
+                    end_date = pos['end-date']['year']['value'] if pos.get('end-date') else "Present"
+                    dept = f", {pos['department-name']}" if pos.get('department-name') else ""
+                    cv += f"* {pos['role-title']}, {pos['organization']['name']}{dept}, {start_date}-{end_date}\n"
+            cv += "\n"
+        
+        # Process memberships
+        if memberships:
+            cv += "### Professional Memberships\n\n"
+            for membership in memberships:
+                for summary in membership['summaries']:
+                    mem = summary['membership-summary']
+                    start_date = f"{mem['start-date']['year']['value']}"
+                    end_date = mem['end-date']['year']['value'] if mem.get('end-date') else "Present"
+                    cv += f"* {mem['role-title']}, {mem['organization']['name']}, {start_date}-{end_date}\n"
+            cv += "\n"
+        
+        # Process services
+        if services:
+            cv += "### Board Service\n\n"
+            for service in services:
+                for summary in service['summaries']:
+                    serv = summary['service-summary']
+                    start_date = f"{serv['start-date']['year']['value']}"
+                    end_date = serv['end-date']['year']['value'] if serv.get('end-date') else "Present"
+                    cv += f"* {serv['role-title']}, {serv['organization']['name']}, {start_date}-{end_date}\n"
+            cv += "\n"
 
     return cv
 
 if __name__ == "__main__":
     filepath = input("Enter the path to the JSON file: ")
-
     if not os.path.exists(filepath):
         print(f"Error: File not found at '{filepath}'")
     else:
@@ -96,5 +144,3 @@ if __name__ == "__main__":
 
         except json.JSONDecodeError:
             print("Error: Invalid JSON format in the input file.")
-        except Exception as e:  # Catch other potential errors
-            print(f"An unexpected error occurred: {e}")

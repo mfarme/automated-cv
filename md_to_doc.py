@@ -45,6 +45,8 @@ def process_paragraph_element(doc, element):
     if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
         level = int(element.name[1])
         p = doc.add_paragraph(style=f'Heading {level}')
+        p.add_run(element.get_text())
+        return
     elif element.name in ['ul', 'ol']:
         # Process list items
         for li in element.find_all('li', recursive=False):
@@ -55,12 +57,9 @@ def process_paragraph_element(doc, element):
                     apply_text_formatting(run, content)
                 else:
                     p.add_run(str(content))
-        return  # Skip further processing for list elements
+        return
     else:
         p = doc.add_paragraph()
-    
-    # Process non-list elements
-    if element.name not in ['ul', 'ol']:
         for content in element.contents:
             if hasattr(content, 'name'):
                 run = p.add_run(content.get_text())
@@ -83,7 +82,7 @@ def convert_to_docx(md_file):
     doc = Document()
     
     # Process each HTML element
-    for element in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol']):
+    for element in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol'], recursive=False):
         process_paragraph_element(doc, element)
     
     # Save docx file
