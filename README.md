@@ -24,4 +24,4 @@ This project enables automatic generation of a CV/Resume in Markdown format usin
 ## Installation
 
 1. Clone this repository
-2. Install required dependencies:
+2. Install required dependencies
