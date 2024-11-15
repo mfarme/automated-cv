@@ -1,10 +1,4 @@
 import os
-import sys
-import subprocess
-import pkg_resources
-from orcid_api import get_orcid_profile, is_valid_orcid, save_profile_to_file
-from cv_formatting import json_to_cv
-from md_to_doc import convert_to_docx, convert_to_pdf
 
 def check_and_install_requirements():
     """Check and install required packages from requirements.txt"""
@@ -37,6 +31,13 @@ def check_and_install_requirements():
             print("Error installing requirements")
             return False
     return True
+
+import sys
+import subprocess
+import pkg_resources
+from orcid_api import get_orcid_profile, is_valid_orcid, save_profile_to_file
+from cv_formatting import json_to_cv
+from md_to_doc import convert_to_docx, convert_to_pdf
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -166,3 +167,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
