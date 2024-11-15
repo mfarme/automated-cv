@@ -1,4 +1,4 @@
 requests>=2.31.0
 markdown>=3.4.3
 python-docx>=0.8.11
-mdpdf>=0.0.18
+beautifulsoup4>=4.12.2

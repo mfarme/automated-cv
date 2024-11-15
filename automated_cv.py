@@ -7,6 +7,16 @@ def check_and_install_requirements():
         print("Error: requirements.txt not found")
         return False
 
+    try:
+        import bs4  # Check if BeautifulSoup is installed
+    except ImportError:
+        print("BeautifulSoup4 not found. Installing requirements...")
+        try:
+            subprocess.check_call([sys.executable, "-m", "pip", "install", "beautifulsoup4"])
+        except subprocess.CalledProcessError:
+            print("Error installing BeautifulSoup4")
+            return False
+
     required = []
     with open(requirements_file) as f:
         for line in f:
@@ -37,7 +47,7 @@ import subprocess
 import pkg_resources
 from orcid_api import get_orcid_profile, is_valid_orcid, save_profile_to_file
 from cv_formatting import json_to_cv
-from md_to_doc import convert_to_docx, convert_to_pdf
+from md_to_doc import convert_to_docx
 
 def clear_screen():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -47,7 +57,7 @@ def print_menu():
     print("=== Automated CV Generator ===")
     print("1. Fetch ORCID Profile")
     print("2. Generate CV from existing JSON")
-    print("3. Convert CV to DOCX/PDF")
+    print("3. Convert CV to DOCX")
     print("4. Generate Complete CV (Steps 1-3)")
     print("5. Exit")
     return input("\nSelect an option (1-5): ")
@@ -91,7 +101,7 @@ def generate_cv(json_file=None):
         return None
 
 def convert_cv(md_file=None):
-    print("\n=== Converting CV ===")
+    print("\n=== Converting CV to DOCX ===")
     if not md_file:
         md_file = "cv.md"
     
@@ -99,26 +109,14 @@ def convert_cv(md_file=None):
         print(f"Error: Markdown file not found at '{md_file}'")
         return
     
-    print("\nChoose output format:")
-    print("1. DOCX")
-    print("2. PDF")
-    
-    while True:
-        try:
-            format_choice = int(input("Enter your choice (1 or 2): "))
-            if format_choice in [1, 2]:
-                break
-        except ValueError:
-            pass
-        print("Invalid choice. Please enter 1 or 2.")
-    
     try:
-        if format_choice == 1:
-            output_file = convert_to_docx(md_file)
-            print(f"\nSuccessfully converted to DOCX: {output_file}")
-        else:
-            output_file = convert_to_pdf(md_file)
-            print(f"\nSuccessfully converted to PDF: {output_file}")
+        # Ensure BeautifulSoup is available
+        import bs4
+        output_file = convert_to_docx(md_file)
+        print(f"\nSuccessfully converted to DOCX with enhanced formatting: {output_file}")
+    except ImportError:
+        print("Error: BeautifulSoup4 is required for enhanced formatting")
+        return
     except Exception as e:
         print(f"Error during conversion: {str(e)}")
 
