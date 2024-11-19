@@ -2,6 +2,8 @@ import streamlit as st
 import json
 from cv_formatting import json_to_cv
 import os
+#import beautifulsoup4
+from bs4 import BeautifulSoup
 from orcid_api import get_orcid_profile, is_valid_orcid
 from md_to_doc import convert_to_docx
 
