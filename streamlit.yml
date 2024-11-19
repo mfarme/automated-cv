@@ -1,0 +1,15 @@
+name: Streamlit Deploy
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Deploy to Streamlit Cloud
+      uses: streamlit/streamlit-deploy@v1
+      with:
+        streamlit-credentials: ${{ secrets.STREAMLIT_CREDENTIALS }}

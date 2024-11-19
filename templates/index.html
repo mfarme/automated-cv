@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORCID CV Generator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .container {
+            text-align: center;
+        }
+        .btn {
+            margin: 10px;
+            background-color: #bb86fc;
+            color: #000000;
+        }
+        .btn:hover {
+            background-color: #9969da;
+        }
+        .input-field input {
+            color: #ffffff !important;
+            border-bottom: 1px solid #bb86fc !important;
+        }
+        .input-field input:focus {
+            border-bottom: 1px solid #03dac6 !important;
+            box-shadow: 0 1px 0 0 #03dac6 !important;
+        }
+        .input-field label {
+            color: #bb86fc !important;
+        }
+        #download-buttons {
+            display: none;
+        }
+        #success-message {
+            display: none;
+            color: #03dac6;
+        }
+        .emoji {
+            font-size: 2em;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ORCID CV Generator</h1>
+        <div class="row">
+            <form id="orcid-form" class="col s12">
+                <div class="input-field">
+                    <input type="text" id="orcid_id" name="orcid_id" required>
+                    <label for="orcid_id">Enter ORCID iD (XXXX-XXXX-XXXX-XXXX)</label>
+                </div>
+                <button class="btn waves-effect waves-light" type="submit">Generate CV</button>
+            </form>
+        </div>
+        <div id="download-buttons">
+            <a href="/download/md" class="btn waves-effect waves-light">Download Markdown</a>
+            <a href="/download/docx" class="btn waves-effect waves-light">Download DOCX</a>
+        </div>
+        <div id="success-message">
+            <p>Your CV has been generated successfully! 🤗</p>
+            <p>Thank you for using our service!</p>
+        </div>
+    </div>
+
+    <!-- Include Materialize JS and dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            M.AutoInit();
+        });
+
+        document.getElementById('orcid-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const orcid_id = document.getElementById('orcid_id').value.trim();
+            
+            if (!orcid_id) {
+                M.toast({html: 'Please enter an ORCID ID', classes: 'red'});
+                return;
+            }
+            
+            try {
+                const response = await fetch('/process_orcid', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: `orcid_id=${encodeURIComponent(orcid_id)}`
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.success) {
+                        document.getElementById('orcid-form').style.display = 'none';
+                        document.getElementById('download-buttons').style.display = 'block';
+                        document.getElementById('success-message').style.display = 'block';
+                        M.toast({html: 'CV generated successfully!', classes: 'green'});
+                    } else {
+                        M.toast({html: 'Unexpected response format', classes: 'red'});
+                    }
+                } else {
+                    M.toast({html: data.error || 'An error occurred', classes: 'red'});
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                M.toast({html: 'An error occurred while processing your request', classes: 'red'});
+            }
+        });
+    </script>
+</body>
+</html>

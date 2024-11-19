@@ -1,127 +1,105 @@
 import json
 import os
 
-def json_to_cv(json_data):
+def json_to_cv(data):
     try:
-        data = json.loads(json_data)
-    except json.JSONDecodeError:
-        return "Error: Invalid JSON input."
-
-    cv = ""
-
-    # Contact Information
-    cv += f"# {data['person']['name']['credit-name']['value']}\n\n"
-    orcid = data.get('orcid-identifier', {}).get('uri', '')
-    if orcid:
-        cv += f"ORCID: [{orcid}]({orcid})\n"
-    linkedin = next((item['url']['value'] for item in data['person']['researcher-urls']['researcher-url'] if item['url-name'] == 'LinkedIn'), '')
-    if linkedin:
-        cv += f"LinkedIn: [{linkedin}]({linkedin})\n"
-
-
-    # Summary/Biography
-    bio = data['person']['biography'].get('content', '')
-    if bio:
-        cv += f"## Summary\n\n{bio}\n\n"
-
-    # Experience
-    employments = data['activities-summary']['employments']['affiliation-group']
-    if employments:
-        cv += "## Experience\n\n"
-        for employment in employments:
-            for summary in employment['summaries']:
-                start_date = f"{summary['employment-summary']['start-date']['year']['value']}"
-                if summary['employment-summary']['start-date'].get('month'):
-                    start_date += f"-{summary['employment-summary']['start-date']['month']['value']}"
-                end_date = summary['employment-summary']['end-date']['year']['value'] if summary['employment-summary']['end-date'] else "Present"
-                cv += f"**{summary['employment-summary']['role-title']}**, {summary['employment-summary']['organization']['name']}, {summary['employment-summary']['organization']['address']['city']}, {summary['employment-summary']['organization']['address']['region'] or summary['employment-summary']['organization']['address']['country']}, {start_date} - {end_date}\n\n"
-                if summary['employment-summary'].get('department-name'):
-                    cv += f"* {summary['employment-summary']['department-name']}\n\n"
-
-
-    # Education
-    educations = data['activities-summary']['educations']['affiliation-group']
-    if educations:
-        cv += "## Education\n\n"
-        for education in educations:
-            for summary in education['summaries']:
-                start_date = summary['education-summary']['start-date']['year']['value']
-                end_date = summary['education-summary']['end-date']['year']['value'] if summary['education-summary']['end-date'] else "Present"
-                cv += f"**{summary['education-summary']['role-title']}**, {summary['education-summary']['organization']['name']}, {summary['education-summary']['organization']['address']['city']}, {summary['education-summary']['organization']['address']['region'] or summary['education-summary']['organization']['address']['country']}, {start_date} - {end_date}\n\n"
-                if summary['education-summary'].get('department-name'):
-                    cv += f"* {summary['education-summary']['department-name']}\n\n"
-
-    # Publications
-    works = data['activities-summary']['works'].get('group', [])
-    if works:
-        cv += "## Publications\n\n"
-        for work in works:
-            for summary in work.get('work-summary', []):
-                title = summary['title']['title']['value']
-                journal = summary.get('journal-title', {}).get('value', '')
-                doi = next((eid['external-id-value'] for eid in summary['external-ids']['external-id'] if eid['external-id-type'] == 'doi'), '')
-                pub_date = f"{summary['publication-date']['year']['value']}"
-                if summary['publication-date'].get('month'):
-                    pub_date += f"-{summary['publication-date']['month']['value']}"
-                cv += f"* {title}, *{journal}*, {pub_date}. doi:[{doi}](https://doi.org/{doi})\n"
-        cv += "\n"  # Add extra newline after publications
-
-    # Professional Activities
-    invited_positions = data['activities-summary'].get('invited-positions', {}).get('affiliation-group', [])
-    memberships = data['activities-summary'].get('memberships', {}).get('affiliation-group', [])
-    services = data['activities-summary'].get('services', {}).get('affiliation-group', [])
-    distinctions = data['activities-summary'].get('distinctions', {}).get('affiliation-group', [])
-
-    if invited_positions or memberships or services or distinctions:
-        cv += "## Professional Activities\n\n"
+        if not data or not isinstance(data, dict):
+            return "Error generating CV: Invalid data"
+            
+        cv = ""
         
-        # Process distinctions
-        if distinctions:
-            cv += "### Honors and Awards\n\n"
-            for distinction in distinctions:
-                for summary in distinction['summaries']:
-                    dist = summary['distinction-summary']
-                    start_date = f"{dist['start-date']['year']['value']}"
-                    end_date = dist['end-date']['year']['value'] if dist.get('end-date') else ""
-                    date_range = f"{start_date}{'-' + end_date if end_date else ''}"
-                    cv += f"* {dist['role-title']}, {dist['organization']['name']}, {date_range}\n"
-            cv += "\n"
+        # Basic Information
+        person = data.get('person', {}) or {}
+        name_dict = (person.get('name', {}) or {})
+        credit_name = ((name_dict.get('credit-name') or {}).get('value') or '').strip()
+        given_name = ((name_dict.get('given-names') or {}).get('value') or '').strip()
+        family_name = ((name_dict.get('family-names') or {}).get('value') or '').strip()
+        name = credit_name or f"{given_name} {family_name}".strip()
+        cv += f"# {name}\n\n" if name else "# Unnamed\n\n"
         
-        # Process invited positions
-        if invited_positions:
-            cv += "### Advisory Positions\n\n"
-            for position in invited_positions:
-                for summary in position['summaries']:
-                    pos = summary['invited-position-summary']
-                    start_date = f"{pos['start-date']['year']['value']}"
-                    end_date = pos['end-date']['year']['value'] if pos.get('end-date') else "Present"
-                    dept = f", {pos['department-name']}" if pos.get('department-name') else ""
-                    cv += f"* {pos['role-title']}, {pos['organization']['name']}{dept}, {start_date}-{end_date}\n"
-            cv += "\n"
-        
-        # Process memberships
-        if memberships:
-            cv += "### Professional Memberships\n\n"
-            for membership in memberships:
-                for summary in membership['summaries']:
-                    mem = summary['membership-summary']
-                    start_date = f"{mem['start-date']['year']['value']}"
-                    end_date = mem['end-date']['year']['value'] if mem.get('end-date') else "Present"
-                    cv += f"* {mem['role-title']}, {mem['organization']['name']}, {start_date}-{end_date}\n"
-            cv += "\n"
-        
-        # Process services
-        if services:
-            cv += "### Board Service\n\n"
-            for service in services:
-                for summary in service['summaries']:
-                    serv = summary['service-summary']
-                    start_date = f"{serv['start-date']['year']['value']}"
-                    end_date = serv['end-date']['year']['value'] if serv.get('end-date') else "Present"
-                    cv += f"* {serv['role-title']}, {serv['organization']['name']}, {start_date}-{end_date}\n"
-            cv += "\n"
+        # ORCID and External IDs
+        orcid = (data.get('orcid-identifier') or {}).get('uri')
+        if orcid:
+            cv += f"ORCID: [{orcid}]({orcid})\n"
+            
+        external_ids = (person.get('external-identifiers') or {}).get('external-identifier') or []
+        for ext_id in external_ids:
+            if not isinstance(ext_id, dict):
+                continue
+            id_type = ext_id.get('external-id-type')
+            id_value = ext_id.get('external-id-value')
+            id_url = (ext_id.get('external-id-url') or {}).get('value')
+            if id_type and id_value:
+                cv += f"{id_type}: {f'[{id_value}]({id_url})' if id_url else id_value}\n"
 
-    return cv
+        # Biography
+        biography = ((person.get('biography') or {}).get('content') or '').strip()
+        if biography:
+            cv += f"\n## Biography\n{biography}\n"
+
+        # Education
+        activities = data.get('activities-summary') or {}
+        educations = (activities.get('educations') or {}).get('affiliation-group') or []
+        if educations:
+            cv += "\n## Education\n"
+            for edu_group in educations:
+                for summary in edu_group.get('summaries') or []:
+                    edu = (summary.get('education-summary') or {})
+                    role = (edu.get('role-title') or '').strip()
+                    dept = (edu.get('department-name') or '').strip()
+                    org = (edu.get('organization') or {}).get('name', '').strip()
+                    start = ((edu.get('start-date') or {}).get('year') or {}).get('value', '')
+                    end = ((edu.get('end-date') or {}).get('year') or {}).get('value', '')
+                    if role and org:
+                        cv += f"- {role}{f' in {dept}' if dept else ''}, {org} ({start}-{end})\n"
+
+        # Works/Publications
+        works = (activities.get('works') or {}).get('group') or []
+        if works:
+            cv += "\n## Publications\n"
+            for work_group in works:
+                for summary in (work_group.get('work-summary') or []):
+                    if not isinstance(summary, dict):
+                        continue
+                    title = ((summary.get('title') or {}).get('title') or {}).get('value', '').strip()
+                    journal = (summary.get('journal-title') or {}).get('value', '').strip()
+                    year = ((summary.get('publication-date') or {}).get('year') or {}).get('value', '')
+                    external_ids = (summary.get('external-ids') or {}).get('external-id') or []
+                    doi = next((
+                        ext_id.get('external-id-value', '')
+                        for ext_id in external_ids
+                        if isinstance(ext_id, dict) and ext_id.get('external-id-type') == 'doi'
+                    ), '')
+                    if title and journal:
+                        cv += f"- {title}. *{journal}* ({year})"
+                        cv += f" [DOI: {doi}]" if doi else ""
+                        cv += "\n"
+
+        # Service and Distinctions
+        for section, header in [
+            ('services', 'Service'),
+            ('distinctions', 'Honors and Awards'),
+            ('invited-positions', 'Invited Positions')
+        ]:
+            items = (activities.get(section) or {}).get('affiliation-group') or []
+            if items:
+                cv += f"\n## {header}\n"
+                for item_group in items:
+                    for summary in item_group.get('summaries') or []:
+                        if not isinstance(summary, dict):
+                            continue
+                        item = (summary.get(f'{section[:-1]}-summary') or {})
+                        role = (item.get('role-title') or '').strip()
+                        org = (item.get('organization') or {}).get('name', '').strip()
+                        start = ((item.get('start-date') or {}).get('year') or {}).get('value', '')
+                        end = ((item.get('end-date') or {}).get('year') or {}).get('value', '')
+                        if role and org:
+                            cv += f"- {role}, {org} ({start}{'-' + end if end else '-present'})\n"
+
+        return cv
+
+    except Exception as e:
+        return f"Error generating CV: {str(e)}"
 
 if __name__ == "__main__":
     filepath = input("Enter the path to the JSON file: ")
@@ -129,9 +107,9 @@ if __name__ == "__main__":
         print(f"Error: File not found at '{filepath}'")
     else:
         try:
-            with open(filepath, 'r', encoding='utf-8') as f:  # Explicitly handle encoding
+            with open(filepath, 'r', encoding='utf-8') as f:
                 json_data = f.read()
-            markdown_cv = json_to_cv(json_data)
+            markdown_cv = json_to_cv(json.loads(json_data))
             print(markdown_cv)
 
             # Optional: Save the markdown to a file

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generate CV</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Generate CV</h1>
+        <form action="/generate_cv" method="post">
+            <label for="json_file">JSON File Path:</label>
+            <input type="text" id="json_file" name="json_file" value="orcid_profile.json" required>
+            <button class="btn waves-effect waves-light" type="submit">Generate CV</button>
+        </form>
+        <form action="/convert_cv" method="post">
+            <input type="hidden" name="md_file" value="cv.md">
+            <button class="btn waves-effect waves-light" type="submit">Convert to DOCX</button>
+        </form>
+    </div>
+</body>
+</html>
