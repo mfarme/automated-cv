@@ -1,108 +1,43 @@
 import os
-import glob
 import markdown
 from docx import Document
-from docx.shared import Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
 from bs4 import BeautifulSoup
 
-def find_md_files():
-    # Find all .md files in current directory
-    md_files = glob.glob("*.md")
-    if not md_files:
-        print("No markdown files found in current directory.")
-        return None
-    
-    # Show available files to user
-    print("\nAvailable markdown files:")
-    for i, file in enumerate(md_files, 1):
-        print(f"{i}. {file}")
-    
-    # Let user choose a file
-    while True:
-        try:
-            choice = int(input("\nSelect file number to convert: ")) - 1
-            if 0 <= choice < len(md_files):
-                return md_files[choice]
-        except ValueError:
-            pass
-        print("Invalid selection. Please try again.")
-
-def apply_text_formatting(run, element):
-    if element.name == 'strong':
-        run.bold = True
-    elif element.name == 'em':
-        run.italic = True
-    elif element.name == 'code':
-        run.font.name = 'Courier New'
-        run.font.size = Pt(10)
-
-def process_paragraph_element(doc, element):
-    # Skip list items that are direct children of lists - they'll be handled by their parent
-    if element.name in ['li'] and element.parent.name in ['ul', 'ol']:
-        return
-
-    if element.name in ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']:
-        level = int(element.name[1])
-        p = doc.add_paragraph(style=f'Heading {level}')
-        p.add_run(element.get_text())
-        return
-    elif element.name in ['ul', 'ol']:
-        # Process list items
-        for li in element.find_all('li', recursive=False):
-            p = doc.add_paragraph(style='List Bullet')
-            for content in li.contents:
-                if hasattr(content, 'name'):
-                    run = p.add_run(content.get_text())
-                    apply_text_formatting(run, content)
-                else:
-                    p.add_run(str(content))
-        return
-    else:
-        p = doc.add_paragraph()
-        for content in element.contents:
-            if hasattr(content, 'name'):
-                run = p.add_run(content.get_text())
-                apply_text_formatting(run, content)
-            else:
-                p.add_run(str(content))
-
 def convert_to_docx(md_file, save_path):
-    # Read markdown content
-    with open(md_file, 'r', encoding='utf-8') as f:
-        md_content = f.read()
-    
-    # Convert markdown to HTML
-    html_content = markdown.markdown(md_content, extensions=['tables'])
-    
-    # Parse HTML content
-    soup = BeautifulSoup(html_content, 'html.parser')
-    
-    # Create docx document
-    doc = Document()
-    
-    # Process each HTML element
-    for element in soup.find_all(['p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol'], recursive=False):
-        process_paragraph_element(doc, element)
-    
-    # Save docx file
-    output_file = os.path.join(save_path, md_file.replace('.md', '.docx'))
-    doc.save(output_file)
-    return output_file
-
-def main():
-    md_file = find_md_files()
-    if not md_file:
-        return
-    
     try:
-        save_path = input("Enter the path to save the files (default: cv-output): ").strip() or "cv-output"
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-        output_file = convert_to_docx(md_file, save_path)
-        print(f"\nSuccessfully converted to DOCX: {output_file}")
+        # Read markdown content
+        with open(md_file, 'r', encoding='utf-8') as f:
+            md_content = f.read()
+        
+        # Convert markdown to HTML
+        html_content = markdown.markdown(md_content, extensions=['tables'])
+        
+        # Parse HTML content
+        soup = BeautifulSoup(html_content, 'html.parser')
+        
+        # Create docx document
+        doc = Document()
+        
+        # Process each HTML element
+        for element in soup.recursiveChildGenerator():
+            if element.name:
+                if element.name.startswith('h'):
+                    level = int(element.name[1])
+                    doc.add_heading(element.get_text(), level=level)
+                elif element.name == 'p':
+                    doc.add_paragraph(element.get_text())
+                elif element.name == 'ul':
+                    for li in element.find_all('li'):
+                        doc.add_paragraph(li.get_text(), style='List Bullet')
+                elif element.name == 'ol':
+                    for li in element.find_all('li'):
+                        doc.add_paragraph(li.get_text(), style='List Number')
+        
+        # Save docx file
+        output_file = os.path.join(save_path, md_file.replace('.md', '.docx'))
+        doc.save(output_file)
+        print(f"DOCX file saved at: {output_file}")
+        return output_file
     except Exception as e:
-        print(f"Error during conversion: {str(e)}")
-
-if __name__ == "__main__":
-    main()
+        print(f"Error converting Markdown to DOCX: {str(e)}")
+        return None
