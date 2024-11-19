@@ -1,6 +1,11 @@
 # ORCID CV Generator
 
-Convert your ORCID profile to a formatted document in Markdown or Docx
+Convert your ORCID profile to a formatted document in Markdown or Docx.
+
+Quick Access: [https://automated-cv-orcid.streamlit.app/](https://automated-cv-orcid.streamlit.app/)
+
+## Privacy
+In no way does this app require emails, personal information, or credit card information. This app is free to use. 
 
 ![image](https://github.com/user-attachments/assets/481aae71-5065-46d3-9195-cee4171b545a)
 
