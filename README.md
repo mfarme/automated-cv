@@ -1,6 +1,6 @@
 # ORCID CV Generator
 
-Convert your ORCID profile JSON to a formatted Markdown CV.
+Convert your ORCID profile to a formatted document in Markdown or Docx
 
 ![image](https://github.com/user-attachments/assets/481aae71-5065-46d3-9195-cee4171b545a)
 
