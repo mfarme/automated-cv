@@ -53,6 +53,50 @@ def json_to_cv(data):
                     if role and org:
                         cv += f"- {role}{f' in {dept}' if dept else ''}, {org} ({start}-{end})\n"
 
+        # Employment
+        employments = (activities.get('employments') or {}).get('affiliation-group') or []
+        if employments:
+            cv += "\n## Employment\n"
+            for emp_group in employments:
+                for summary in emp_group.get('summaries') or []:
+                    emp = (summary.get('employment-summary') or {})
+                    role = (emp.get('role-title') or '').strip()
+                    org = (emp.get('organization') or {}).get('name', '').strip()
+                    start = ((emp.get('start-date') or {}).get('year') or {}).get('value', '')
+                    end = ((emp.get('end-date') or {}).get('year') or {}).get('value', '')
+                    if role and org:
+                        cv += f"- {role}, {org} ({start}{'-' + end if end else '-present'})\n"
+
+        # Funding
+        fundings = (activities.get('fundings') or {}).get('group') or []
+        if fundings:
+            cv += "\n## Funding\n"
+            for funding_group in fundings:
+                for summary in (funding_group.get('funding-summary') or []):
+                    if not isinstance(summary, dict):
+                        continue
+                    title = ((summary.get('title') or {}).get('title') or {}).get('value', '').strip()
+                    org = (summary.get('organization') or {}).get('name', '').strip()
+                    start = ((summary.get('start-date') or {}).get('year') or {}).get('value', '')
+                    end = ((summary.get('end-date') or {}).get('year') or {}).get('value', '')
+                    if title and org:
+                        cv += f"- {title}, {org} ({start}{'-' + end if end else '-present'})\n"
+
+        # Peer Review
+        peer_reviews = (activities.get('peer-reviews') or {}).get('group') or []
+        if peer_reviews:
+            cv += "\n## Peer Review\n"
+            for review_group in peer_reviews:
+                for summary in (review_group.get('peer-review-summary') or []):
+                    if not isinstance(summary, dict):
+                        continue
+                    role = (summary.get('role-title') or '').strip()
+                    org = (summary.get('organization') or {}).get('name', '').strip()
+                    start = ((summary.get('start-date') or {}).get('year') or {}).get('value', '')
+                    end = ((summary.get('end-date') or {}).get('year') or {}).get('value', '')
+                    if role and org:
+                        cv += f"- {role}, {org} ({start}{'-' + end if end else '-present'})\n"
+
         # Works/Publications
         works = (activities.get('works') or {}).get('group') or []
         if works:
